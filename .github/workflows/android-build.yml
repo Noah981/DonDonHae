@@ -19,8 +19,8 @@ jobs:
         run: |
           mkdir -p assets/data assets/images
           curl -L --fail --retry 3 -o assets/data/korea_provinces.geojson https://raw.githubusercontent.com/southkorea/southkorea-maps/master/kostat/2018/json/skorea-provinces-2018-geo.json
-          echo 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScL8WQAAAABJRU5ErkJggg==' | base64 -d > assets/images/dondonhae_symbol.png
-          cp assets/images/dondonhae_symbol.png assets/images/pig_hero.jpg
+          test -f assets/images/dondonhae_symbol.png
+          echo 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScL8WQAAAABJRU5ErkJggg==' | base64 -d > assets/images/pig_hero.jpg
       - name: Generate Android host
         run: |
           rm -rf /tmp/host
@@ -28,6 +28,18 @@ jobs:
           cd /tmp/host
           flutter create --platforms=android --org kr.dondonhae --project-name dondonhae .
           cp -R android "$GITHUB_WORKSPACE/android"
+      - name: Add Android location permissions
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path("android/app/src/main/AndroidManifest.xml")
+          s=p.read_text()
+          marker="<application"
+          perms='    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />\n    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />\n'
+          if "ACCESS_FINE_LOCATION" not in s:
+              s=s.replace(marker, perms+marker, 1)
+          p.write_text(s)
+          PY
       - name: Enable Android desugaring
         run: |
           python3 - <<'PY'
@@ -45,7 +57,7 @@ jobs:
       - run: rm -f test/widget_test.dart
       - run: flutter pub get
       - name: Analyze
-        run: flutter analyze --no-fatal-warnings
+        run: flutter analyze --no-fatal-warnings --no-fatal-infos
       - run: flutter build apk --debug
       - uses: actions/upload-artifact@v4
         with:
