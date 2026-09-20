@@ -28,6 +28,20 @@ jobs:
           cd /tmp/host
           flutter create --platforms=android --org kr.dondonhae --project-name dondonhae .
           cp -R android "$GITHUB_WORKSPACE/android"
+      - name: Enable Android desugaring
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path("android/app/build.gradle.kts")
+          s=p.read_text()
+          s=s.replace("compileOptions {", "compileOptions {\n        isCoreLibraryDesugaringEnabled = true")
+          marker="dependencies {"
+          if marker in s:
+              s=s.replace(marker, marker+'\n    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")',1)
+          else:
+              s += '\n\ndependencies {\n    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")\n}\n'
+          p.write_text(s)
+          PY
       - run: rm -f test/widget_test.dart
       - run: flutter pub get
       - name: Analyze
