@@ -1,7 +1,7 @@
 name: dondonhae
 description: DonDonHae
 publish_to: none
-version: 1.7.0+7
+version: 1.7.0+8
 environment:
   sdk: ">=3.10.0 <4.0.0"
 dependencies:
@@ -10,6 +10,5 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^6.0.0
 flutter:
   uses-material-design: true
