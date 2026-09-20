@@ -1,3 +1,67 @@
-import 'package:flutter/material.dart';import '../data/disease_repository.dart';import '../models/disease_event.dart';import '../widgets/korea_disease_map.dart';
-class DiseasePage extends StatefulWidget{const DiseasePage({super.key});@override State<DiseasePage> createState()=>_DiseasePageState();}
-class _DiseasePageState extends State<DiseasePage>{final repo=DiseaseRepository();String filter='전체';bool domestic=true;@override Widget build(BuildContext context)=>Scaffold(appBar:AppBar(title:const Text('질병 정보')),body:FutureBuilder<List<DiseaseEvent>>(future:repo.load(),builder:(context,s){if(!s.hasData)return const Center(child:CircularProgressIndicator());final events=s.data!.where((e)=>e.domestic==domestic&&(filter=='전체'||e.disease.contains(filter))).toList();return ListView(padding:const EdgeInsets.all(16),children:[SegmentedButton<bool>(segments:const[ButtonSegment(value:true,label:Text('국내')),ButtonSegment(value:false,label:Text('해외'))],selected:{domestic},onSelectionChanged:(v)=>setState(()=>domestic=v.first)),const SizedBox(height:12),Wrap(spacing:8,children:['전체','ASF','구제역','PED','PRRS'].map((x)=>ChoiceChip(label:Text(x),selected:filter==x,onSelected:(_)=>setState(()=>filter=x))).toList()),const SizedBox(height:12),SizedBox(height:420,child:KoreaDiseaseMap(events:events)),const SizedBox(height:14),Text('최근 발생 ${events.length}건',style:const TextStyle(fontWeight:FontWeight.w800)),...events.take(20).map((e)=>ListTile(contentPadding:EdgeInsets.zero,title:Text(e.disease),subtitle:Text('${e.region} · ${e.date}')))]);})));}
+import 'package:flutter/material.dart';
+import '../data/disease_repository.dart';
+import '../models/disease_event.dart';
+import '../widgets/korea_disease_map.dart';
+
+class DiseasePage extends StatefulWidget {
+  const DiseasePage({super.key});
+  @override
+  State<DiseasePage> createState() => _DiseasePageState();
+}
+
+class _DiseasePageState extends State<DiseasePage> {
+  final repo = DiseaseRepository();
+  String filter = '전체';
+  bool domestic = true;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('질병 정보')),
+      body: FutureBuilder<List<DiseaseEvent>>(
+        future: repo.load(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          final events = snapshot.data!
+              .where((e) => e.domestic == domestic && (filter == '전체' || e.disease.contains(filter)))
+              .toList();
+          return ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              SegmentedButton<bool>(
+                segments: const [
+                  ButtonSegment(value: true, label: Text('국내')),
+                  ButtonSegment(value: false, label: Text('해외')),
+                ],
+                selected: {domestic},
+                onSelectionChanged: (v) => setState(() => domestic = v.first),
+              ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                children: ['전체', 'ASF', '구제역', 'PED', 'PRRS']
+                    .map((x) => ChoiceChip(
+                          label: Text(x),
+                          selected: filter == x,
+                          onSelected: (_) => setState(() => filter = x),
+                        ))
+                    .toList(),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(height: 420, child: KoreaDiseaseMap(events: events)),
+              const SizedBox(height: 14),
+              Text('최근 발생 ${events.length}건', style: const TextStyle(fontWeight: FontWeight.w800)),
+              ...events.take(20).map((e) => ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(e.disease),
+                    subtitle: Text('${e.region} · ${e.date}'),
+                  )),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
