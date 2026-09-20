@@ -18,9 +18,12 @@ jobs:
         with:
           channel: stable
           cache: true
-      - name: Generate Android host
-        run: flutter create --platforms=android --org kr.dondonhae --project-name dondonhae .
-      - run: rm -f test/widget_test.dart
+      - name: Generate Android host without overwriting source
+        run: |
+          mkdir -p /tmp/flutter_host
+          cd /tmp/flutter_host
+          flutter create --platforms=android --org kr.dondonhae --project-name dondonhae .
+          cp -R android "$GITHUB_WORKSPACE/android"
       - run: flutter pub get
       - name: Analyze
         run: flutter analyze --no-fatal-warnings
