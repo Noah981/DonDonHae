@@ -1,7 +1,5 @@
 name: Android APK
 on:
-  pull_request:
-    branches: [ main ]
   push:
     branches: [ recovery/flutter-rebuild ]
   workflow_dispatch:
@@ -20,20 +18,25 @@ jobs:
           cache: true
       - name: Generate Android host
         run: |
+          rm -rf /tmp/flutter_host
           mkdir -p /tmp/flutter_host
           cd /tmp/flutter_host
           flutter create --platforms=android --org kr.dondonhae --project-name dondonhae .
+          rm -rf "$GITHUB_WORKSPACE/android"
           cp -R android "$GITHUB_WORKSPACE/android"
+      - name: Verify project
+        run: |
+          cd "$GITHUB_WORKSPACE"
+          pwd
+          test -f pubspec.yaml
+          test -f lib/main.dart
       - name: Dependencies
-        working-directory: ${{ github.workspace }}
-        run: flutter pub get
+        run: cd "$GITHUB_WORKSPACE" && flutter pub get
       - name: Analyze
-        working-directory: ${{ github.workspace }}
-        run: flutter analyze --no-fatal-warnings
+        run: cd "$GITHUB_WORKSPACE" && flutter analyze --no-fatal-warnings
       - name: Build APK
-        working-directory: ${{ github.workspace }}
-        run: flutter build apk --debug
+        run: cd "$GITHUB_WORKSPACE" && flutter build apk --debug
       - uses: actions/upload-artifact@v4
         with:
           name: DonDonHae-v1.7.0-debug-apk
-          path: build/app/outputs/flutter-apk/app-debug.apk
+          path: ${{ github.workspace }}/build/app/outputs/flutter-apk/app-debug.apk
