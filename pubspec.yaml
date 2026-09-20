@@ -20,11 +20,4 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/data/pig-price.json
-    - assets/data/platform.json
-    - assets/data/pig-price-history.json
-    - assets/data/disease-alerts.json
-    - assets/data/disease-sources.json
-    - assets/data/korea_provinces.geojson
-    - assets/images/dondonhae_symbol.png
-    - assets/images/pig_hero.jpg
+    - assets/data/

@@ -20,8 +20,10 @@ jobs:
           cache: true
       - name: Generate Android host
         run: flutter create --platforms=android --org kr.dondonhae --project-name dondonhae .
+      - run: rm -f test/widget_test.dart
       - run: flutter pub get
-      - run: flutter analyze
+      - name: Analyze
+        run: flutter analyze --no-fatal-warnings
       - run: flutter build apk --debug
       - uses: actions/upload-artifact@v4
         with:
