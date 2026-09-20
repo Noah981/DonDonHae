@@ -1,0 +1,2 @@
+import 'dart:convert';import 'package:flutter/services.dart';import '../models/disease_event.dart';
+class DiseaseRepository{Future<List<DiseaseEvent>> load()async{final raw=await rootBundle.loadString('assets/data/disease-alerts.json');final decoded=jsonDecode(raw);final list=decoded is List?decoded:(decoded['items'] as List? ?? const[]);return list.whereType<Map<String,dynamic>>().map(DiseaseEvent.fromJson).toList();}}
