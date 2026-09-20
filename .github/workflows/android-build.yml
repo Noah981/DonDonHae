@@ -18,16 +18,21 @@ jobs:
         with:
           channel: stable
           cache: true
-      - name: Generate Android host without overwriting source
+      - name: Generate Android host
         run: |
           mkdir -p /tmp/flutter_host
           cd /tmp/flutter_host
           flutter create --platforms=android --org kr.dondonhae --project-name dondonhae .
           cp -R android "$GITHUB_WORKSPACE/android"
-      - run: flutter pub get
+      - name: Dependencies
+        working-directory: ${{ github.workspace }}
+        run: flutter pub get
       - name: Analyze
+        working-directory: ${{ github.workspace }}
         run: flutter analyze --no-fatal-warnings
-      - run: flutter build apk --debug
+      - name: Build APK
+        working-directory: ${{ github.workspace }}
+        run: flutter build apk --debug
       - uses: actions/upload-artifact@v4
         with:
           name: DonDonHae-v1.7.0-debug-apk
