@@ -57,7 +57,7 @@ def fetch(page):
         BASE + "?" + query,
         headers={"User-Agent": "DonDonHae/1.0 (+official-outbreak-sync)"},
     )
-    with urllib.request.urlopen(req, timeout=20) as response:
+    with urllib.request.urlopen(req, timeout=8) as response:
         return response.read().decode("utf-8", errors="ignore")
 
 def row_cells(page_html):
@@ -110,9 +110,21 @@ def to_event(cells):
 
 def main():
     collected = {}
+    existing = {}
+    if OUT.exists():
+        try:
+            current = json.loads(OUT.read_text(encoding="utf-8"))
+            for item in current.get("items", []):
+                if item.get("id") and item.get("verificationLevel") in (
+                    "official", "official_region_only"
+                ):
+                    existing[item["id"]] = item
+        except Exception:
+            pass
+
     empty_pages = 0
     previous_fingerprint = None
-    for page in range(1, 81):
+    for page in range(1, 26):
         try:
             body = fetch(page)
         except Exception as exc:
@@ -143,6 +155,8 @@ def main():
         print("No target KAHIS rows parsed; preserving bundled snapshot.")
         return 0
 
+    merged = dict(existing)
+    merged.update(collected)
     now = dt.datetime.now(dt.timezone(dt.timedelta(hours=9))).isoformat()
     payload = {
         "schemaVersion": 3,
@@ -152,14 +166,14 @@ def main():
             "PED 등 공식 공개 발생자료가 확보되지 않은 질병은 0건으로 단정하지 않습니다."
         ),
         "items": sorted(
-            collected.values(),
+            merged.values(),
             key=lambda x: x.get("occurrenceDate") or "",
             reverse=True,
         ),
     }
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(f"Wrote {len(collected)} official KAHIS events.")
+    print(f"Wrote {len(merged)} verified events ({len(collected)} refreshed from KAHIS).")
     return 0
 
 if __name__ == "__main__":
