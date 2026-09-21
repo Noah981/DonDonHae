@@ -21,6 +21,7 @@ jobs:
         run: |
           mkdir -p assets/data assets/images
           curl -L --fail --retry 3 -o assets/data/korea_provinces.geojson https://raw.githubusercontent.com/southkorea/southkorea-maps/master/kostat/2018/json/skorea-provinces-2018-geo.json
+          curl -L --fail --retry 3 -o assets/data/korea_municipalities.geojson https://raw.githubusercontent.com/southkorea/southkorea-maps/master/kostat/2018/json/skorea-municipalities-2018-geo.json
           gh api repos/$GITHUB_REPOSITORY/git/blobs/2800071655dcc6b9155c0ea3a938be6bb0b843f6 --jq .content | tr -d '\n' | base64 -d > assets/images/dondonhae_symbol.png
           echo 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScL8WQAAAABJRU5ErkJggg==' | base64 -d > assets/images/pig_hero.jpg
       - name: Generate Android host
@@ -60,6 +61,8 @@ jobs:
       - run: flutter pub get
       - name: Analyze
         run: flutter analyze --no-fatal-warnings --no-fatal-infos
+      - name: Test
+        run: flutter test
       - run: flutter build apk --release
       - uses: actions/upload-artifact@v4
         with:
