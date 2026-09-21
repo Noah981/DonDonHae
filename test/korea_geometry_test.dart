@@ -6,8 +6,7 @@ import 'package:dondonhae/data/korea_geometry.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  test('official-vector snapshot places key Korean coordinates correctly',
-      () async {
+  test('official-vector snapshot resolves key Korean coordinates', () async {
     final provinceRaw =
         await rootBundle.loadString('assets/data/korea_provinces.geojson');
     final municipalityRaw =
@@ -17,20 +16,30 @@ void main() {
       municipalities: KoreaRegionGeometry.parseGeoJson(municipalityRaw),
     );
 
-    String regionAt(double lon, double lat) =>
+    String provinceAt(double lon, double lat) =>
+        index
+            .regionContaining(lon, lat, preferMunicipality: false)
+            ?.name ??
+        '';
+    String municipalityAt(double lon, double lat) =>
         index.regionContaining(lon, lat)?.name ?? '';
 
-    expect(normalizeKoreaRegion(regionAt(126.9780, 37.5665)),
+    expect(normalizeKoreaRegion(provinceAt(126.9780, 37.5665)),
         contains('서울'));
-    expect(normalizeKoreaRegion(regionAt(128.6014, 35.8714)),
+    expect(normalizeKoreaRegion(provinceAt(128.6014, 35.8714)),
         contains('대구'));
-    expect(normalizeKoreaRegion(regionAt(129.0756, 35.1796)),
+    expect(normalizeKoreaRegion(provinceAt(129.0756, 35.1796)),
         contains('부산'));
-    expect(normalizeKoreaRegion(regionAt(126.5312, 33.4996)),
-        anyOf(contains('제주'), contains('제주시')));
-    expect(normalizeKoreaRegion(regionAt(130.9057, 37.4845)),
-        anyOf(contains('울릉'), contains('경상북도')));
-    expect(normalizeKoreaRegion(regionAt(131.8653, 37.2411)),
-        anyOf(contains('울릉'), contains('경상북도')));
+    expect(normalizeKoreaRegion(provinceAt(126.5312, 33.4996)),
+        contains('제주'));
+    expect(normalizeKoreaRegion(provinceAt(130.9057, 37.4845)),
+        contains('경상북도'));
+    expect(normalizeKoreaRegion(provinceAt(131.8653, 37.2411)),
+        contains('경상북도'));
+
+    expect(normalizeKoreaRegion(municipalityAt(130.9057, 37.4845)),
+        contains('울릉'));
+    expect(normalizeKoreaRegion(municipalityAt(131.8653, 37.2411)),
+        contains('울릉'));
   });
 }
