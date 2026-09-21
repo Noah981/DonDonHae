@@ -26,5 +26,6 @@ flutter:
     - assets/data/disease-alerts.json
     - assets/data/disease-sources.json
     - assets/data/korea_provinces.geojson
+    - assets/data/korea_municipalities.geojson
     - assets/images/dondonhae_symbol.png
     - assets/images/pig_hero.jpg
