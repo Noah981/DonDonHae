@@ -1,0 +1,72 @@
+name: Android APK
+on:
+  push:
+    branches: [ recovery/flutter-rebuild ]
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - name: Restore required map and image assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p assets/data assets/images
+          curl -L --fail --retry 3 -o assets/data/korea_provinces.geojson https://raw.githubusercontent.com/southkorea/southkorea-maps/master/kostat/2018/json/skorea-provinces-2018-geo.json
+          curl -L --fail --retry 3 -o assets/data/korea_municipalities.geojson https://raw.githubusercontent.com/southkorea/southkorea-maps/master/kostat/2018/json/skorea-municipalities-2018-geo.json
+          gh api repos/$GITHUB_REPOSITORY/git/blobs/2800071655dcc6b9155c0ea3a938be6bb0b843f6 --jq .content | tr -d '\n' | base64 -d > assets/images/dondonhae_symbol.png
+          echo 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScL8WQAAAABJRU5ErkJggg==' | base64 -d > assets/images/pig_hero.jpg
+      - name: Generate Android host
+        run: |
+          rm -rf /tmp/host
+          mkdir -p /tmp/host
+          cd /tmp/host
+          flutter create --platforms=android --org kr.dondonhae --project-name dondonhae .
+          cp -R android "$GITHUB_WORKSPACE/android"
+      - name: Add Android location permissions
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path("android/app/src/main/AndroidManifest.xml")
+          s=p.read_text()
+          marker="<application"
+          perms='    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />\n    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />\n'
+          if "ACCESS_FINE_LOCATION" not in s:
+              s=s.replace(marker, perms+marker, 1)
+          p.write_text(s)
+          PY
+      - name: Enable Android desugaring
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path("android/app/build.gradle.kts")
+          s=p.read_text()
+          s=s.replace("compileOptions {", "compileOptions {\n        isCoreLibraryDesugaringEnabled = true")
+          marker="dependencies {"
+          if marker in s:
+              s=s.replace(marker, marker+'\n    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")',1)
+          else:
+              s += '\n\ndependencies {\n    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")\n}\n'
+          p.write_text(s)
+          PY
+      - run: rm -f test/widget_test.dart
+      - run: flutter pub get
+      - name: Collect official KAHIS outbreaks
+        run: python3 scripts/collect_kahis.py
+      - name: Analyze
+        run: flutter analyze --no-fatal-warnings --no-fatal-infos
+      - name: Test
+        run: flutter test
+      - run: flutter build apk --release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: DonDonHae-WORK3-Release-APK
+          path: build/app/outputs/flutter-apk/app-release.apk
