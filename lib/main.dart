@@ -111,4 +111,11 @@ class _MarketCard extends StatelessWidget {
   }
 }
 
-class _NavCard extends StatelessWidget;
+class _NavCard extends StatelessWidget{
+  final IconData icon; final String title; final String subtitle; final VoidCallback? onTap;
+  const _NavCard({required this.icon,required this.title,required this.subtitle,this.onTap});
+  @override Widget build(BuildContext context)=>Card(child:ListTile(onTap:onTap,leading:Icon(icon),title:Text(title,style:const TextStyle(fontWeight:FontWeight.w800)),subtitle:Text(subtitle),trailing:const Icon(Icons.chevron_right)));
+}
+
+String _comma(dynamic value){final s=value.toString(); final neg=s.startsWith('-'); final raw=neg?s.substring(1):s; final b=StringBuffer(); for(var i=0;i<raw.length;i++){if(i>0&&(raw.length-i)%3==0)b.write(',');b.write(raw[i]);}return '${neg?'-':''}$b';}
+String _date(dynamic value){final s=value.toString();if(s.length!=8)return s;return '${s.substring(0,4)}.${s.substring(4,6)}.${s.substring(6,8)}';}
