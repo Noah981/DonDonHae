@@ -111,12 +111,19 @@ def to_event(cells):
 def main():
     collected = {}
     empty_pages = 0
+    previous_fingerprint = None
     for page in range(1, 81):
         try:
             body = fetch(page)
         except Exception as exc:
             print(f"KAHIS fetch page {page} failed: {exc}", file=sys.stderr)
             break
+
+        fingerprint = hashlib.sha1(body.encode('utf-8')).hexdigest()
+        if fingerprint == previous_fingerprint:
+            print('KAHIS pagination returned the same page; stopping safely.')
+            break
+        previous_fingerprint = fingerprint
 
         found_any_row = False
         for cells in row_cells(body):
