@@ -20,6 +20,7 @@ class _DiseasePageState extends State<DiseasePage> {
   String selected = 'ASF';
   bool domestic = true;
   Position? position;
+  String? focusedEventId;
 
   @override
   void initState() {
@@ -97,7 +98,11 @@ class _DiseasePageState extends State<DiseasePage> {
                                   events: events,
                                   userLatitude: position?.latitude,
                                   userLongitude: position?.longitude,
-                                  onEventTap: _showEvent,
+                                  focusedEventId: focusedEventId,
+                                  onEventTap: (event) {
+                                    setState(() => focusedEventId = event.id);
+                                    _showEvent(event);
+                                  },
                                 ),
                               ),
                             ),
@@ -134,7 +139,10 @@ class _DiseasePageState extends State<DiseasePage> {
                         padding: const EdgeInsets.only(bottom: 8),
                         child: Card(
                           child: ListTile(
-                            onTap: () => _showEvent(event),
+                            onTap: () {
+                              setState(() => focusedEventId = event.id);
+                              _showEvent(event);
+                            },
                             title: Text('${event.province} ${event.district}'.trim(), style: const TextStyle(fontWeight: FontWeight.w800)),
                             subtitle: Text(_eventSubtitle(event)),
                             trailing: const Icon(Icons.chevron_right),
@@ -153,7 +161,12 @@ class _DiseasePageState extends State<DiseasePage> {
   String _eventSubtitle(DiseaseEvent event) {
     final date = event.occurredAt ?? event.announcedAt;
     final dateText = date == null ? '발생일 확인 필요' : '${date.year}.${date.month.toString().padLeft(2, '0')}.${date.day.toString().padLeft(2, '0')}';
-    return '$dateText · ${event.sourceName}';
+    final verification = event.verificationLevel == DiseaseVerificationLevel.unverified
+        ? '미확인 · 지도 미표시'
+        : event.hasPreciseCoordinate
+            ? '공식 · 실제 좌표'
+            : '공식 · 행정구역 대표좌표';
+    return '$dateText · $verification · ${event.sourceName}';
   }
 
   void _showEvent(DiseaseEvent event) => showModalBottomSheet<void>(
@@ -166,11 +179,23 @@ class _DiseasePageState extends State<DiseasePage> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('${event.disease} · ${event.province} ${event.district}', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900)),
-                const SizedBox(height: 10),
+                Text('${event.diseaseType} · ${event.province} ${event.cityCounty}'.trim(), style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900)),
+                const SizedBox(height: 12),
+                _DetailRow(label: '발생일', value: _formatDate(event.occurrenceDate)),
+                _DetailRow(label: '축종', value: event.livestockType.isEmpty ? '확인 필요' : event.livestockType),
+                _DetailRow(label: '상태', value: event.status.isEmpty ? '공식 원문 확인' : event.status),
+                _DetailRow(
+                  label: '검증',
+                  value: event.verificationLevel == DiseaseVerificationLevel.unverified
+                      ? '미확인 · 지도 Marker 미표시'
+                      : event.hasPreciseCoordinate
+                          ? '공식 확인 · 실제 좌표'
+                          : '공식 확인 · 행정구역 대표좌표',
+                ),
+                const SizedBox(height: 8),
                 Text(event.summary.isEmpty ? '공식 발표 원문에서 세부 정보를 확인하세요.' : event.summary),
                 const SizedBox(height: 12),
-                Text('출처: ${event.sourceName}', style: const TextStyle(fontSize: 12, color: Colors.black54)),
+                Text('공식 출처: ${event.sourceName}', style: const TextStyle(fontSize: 12, color: Colors.black54)),
                 if (event.sourceUrl.isNotEmpty) ...[
                   const SizedBox(height: 8),
                   FilledButton.tonalIcon(
@@ -216,4 +241,32 @@ class _StatusCard extends StatelessWidget {
       ),
     );
   }
+}
+
+
+String _formatDate(DateTime? date) {
+  if (date == null) return '확인 필요';
+  return '${date.year}.${date.month.toString().padLeft(2, '0')}.${date.day.toString().padLeft(2, '0')}';
+}
+
+class _DetailRow extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _DetailRow({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.only(bottom: 7),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              width: 56,
+              child: Text(label, style: const TextStyle(fontSize: 12, color: Colors.black54)),
+            ),
+            Expanded(child: Text(value, style: const TextStyle(fontWeight: FontWeight.w700))),
+          ],
+        ),
+      );
 }
