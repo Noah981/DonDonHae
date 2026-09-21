@@ -59,6 +59,8 @@ jobs:
           PY
       - run: rm -f test/widget_test.dart
       - run: flutter pub get
+      - name: Collect official KAHIS outbreaks
+        run: python3 scripts/collect_kahis.py
       - name: Analyze
         run: flutter analyze --no-fatal-warnings --no-fatal-infos
       - name: Test
