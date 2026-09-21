@@ -1,1 +1,43 @@
-{"schemaVersion":2,"updatedAt":"2026-09-20","items":[]}
+{
+  "schemaVersion": 3,
+  "updatedAt": "2026-09-21T12:00:00+09:00",
+  "notice": "KAHIS 공식 공개 발생정보를 기준으로 수록합니다. PED 등 공식 발생 공개자료가 확보되지 않은 질병은 0건으로 단정하지 않습니다.",
+  "items": [
+    {
+      "id": "KAHIS-ASF-20260209-JEONNAM-YEONGAM",
+      "diseaseType": "ASF",
+      "countryCode": "KR",
+      "province": "전라남도",
+      "cityCounty": "영암군",
+      "districtCode": "46830",
+      "latitude": null,
+      "longitude": null,
+      "occurrenceDate": "2026-02-09",
+      "announcementDate": "2026-02-09",
+      "livestockType": "돼지",
+      "status": "발생",
+      "source": "국가가축방역통합시스템(KAHIS)",
+      "sourceUrl": "https://home.kahis.go.kr/home/lkntscrinfo/selectLkntsOccrrncList.do",
+      "verificationLevel": "official_region_only",
+      "summary": "KAHIS 법정가축전염병 발생현황에서 전라남도 영암군 돼지 농장의 아프리카돼지열병 발생이 공식 확인된 건입니다."
+    },
+    {
+      "id": "KAHIS-PRRS-20260827-JEJU-JEJUSI",
+      "diseaseType": "PRRS",
+      "countryCode": "KR",
+      "province": "제주특별자치도",
+      "cityCounty": "제주시",
+      "districtCode": "50110",
+      "latitude": null,
+      "longitude": null,
+      "occurrenceDate": "2026-08-27",
+      "announcementDate": "2026-08-27",
+      "livestockType": "돼지",
+      "status": "발생",
+      "source": "국가가축방역통합시스템(KAHIS)",
+      "sourceUrl": "https://home.kahis.go.kr/home/lkntscrinfo/selectLkntsOccrrncList.do",
+      "verificationLevel": "official_region_only",
+      "summary": "KAHIS 국내 가축전염병 발생현황에 공개된 돼지생식기호흡기증후군(PRRS) 공식 발생 건입니다."
+    }
+  ]
+}
